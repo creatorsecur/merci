@@ -485,8 +485,41 @@ function wrapCakeText(text, maxChars = 13) {
 // ============================================================================
 // СТУДИЙНЫЙ ФОТОРЕАЛИСТИЧНЫЙ 2D-РЕНДЕР ТОРТА (SVG + ФИЛЬТРЫ + ТЕНИ)
 // ============================================================================
+function StudioCakeRenderer(props) {
+  const wrapRef = useRef(null);
+  const uid = useMemo(() => Math.random().toString(36).slice(2, 7), []);
 
-function StudioCakeRenderer({
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    el.querySelectorAll('[id]').forEach((node) => {
+      const oldId = node.getAttribute('id');
+      if (oldId && !oldId.endsWith(uid)) {
+        node.setAttribute('id', `${oldId}-${uid}`);
+      }
+    });
+    el.querySelectorAll('*').forEach((node) => {
+      for (const attr of Array.from(node.attributes)) {
+        if (attr.value.includes('url(#')) {
+          node.setAttribute(
+            attr.name,
+            attr.value.replace(/url\(#([^)]+)\)/g, (_, id) =>
+              id.endsWith(uid) ? `url(#${id})` : `url(#${id}-${uid})`
+            )
+          );
+        }
+      }
+    });
+  });
+
+  return (
+    <div ref={wrapRef} className="w-full h-full flex items-center justify-center">
+      <RawStudioCakeRenderer {...props} />
+    </div>
+  );
+}
+
+function RawStudioCakeRenderer({
   viewMode,
   shape,
   weight,
